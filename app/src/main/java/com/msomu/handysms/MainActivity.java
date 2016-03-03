@@ -1,5 +1,7 @@
 package com.msomu.handysms;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +20,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private String transationalAddressPattern = "(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$";
+    private int totalSms = 0;
+    private int transactionalSms = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
 
         parseSms(readAllMessage());
 
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.frame_layout, MainActivityFragment.newInstance(totalSms, transactionalSms));
+        fragmentTransaction.commit();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,9 +47,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void parseSms(List<SmsDataClass> smsDataClasses) {
+        totalSms = smsDataClasses.size();
         for (int i = 0; i < smsDataClasses.size(); i++) {
             boolean smsTrasactional = findTransactionalSmsOrNot(smsDataClasses.get(i));
             Log.d("MainActivity", smsDataClasses.get(i).getAddress() + " " + smsTrasactional);
+            if (smsTrasactional) {
+                transactionalSms++;
+            }
         }
     }
 
