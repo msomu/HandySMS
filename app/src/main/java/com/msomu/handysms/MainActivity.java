@@ -4,6 +4,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +14,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private String transationalAddressPattern = "(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$";
     private int totalSms = 0;
     private int transactionalSms = 0;
+    private ProgressBar readingSmsProgressBar;
+    private LinearLayout loadingReadSms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,13 +34,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        readingSmsProgressBar = (ProgressBar) findViewById(R.id.loadingProgressBar);
+        loadingReadSms = (LinearLayout) findViewById(R.id.loading);
 
-        parseSms(readAllMessage());
+        new ReadSmsAndAnalyse().execute();
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.frame_layout, MainActivityFragment.newInstance(totalSms, transactionalSms));
-        fragmentTransaction.commit();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,6 +47,13 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    private void fragmentShow() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.frame_layout, MainActivityFragment.newInstance(totalSms, transactionalSms));
+        fragmentTransaction.commit();
     }
 
     private void parseSms(List<SmsDataClass> smsDataClasses) {
@@ -102,5 +112,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class ReadSmsAndAnalyse extends AsyncTask<Void, Integer, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingReadSms.setVisibility(View.VISIBLE);
+            readingSmsProgressBar.setProgress(0);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            parseSms(readAllMessage());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            loadingReadSms.setVisibility(View.GONE);
+            fragmentShow();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            readingSmsProgressBar.setProgress(values[0]);
+        }
     }
 }
