@@ -1,6 +1,5 @@
 package com.msomu.handysms;
 
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +17,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String transationalAddressPattern = "(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        readAllMessage();
+        parseSms(readAllMessage());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -37,6 +38,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void parseSms(List<SmsDataClass> smsDataClasses) {
+        for (int i = 0; i < smsDataClasses.size(); i++) {
+            boolean smsTrasactional = findTransactionalSmsOrNot(smsDataClasses.get(i));
+            Log.d("MainActivity", smsDataClasses.get(i).getAddress() + " " + smsTrasactional);
+        }
+    }
+
+    private boolean findTransactionalSmsOrNot(SmsDataClass smsDataClass) {
+        return smsDataClass.getAddress() != null && smsDataClass.getAddress().matches(transationalAddressPattern);
+    }
+
     public List<SmsDataClass> readAllMessage(){
         List<SmsDataClass> sms = new ArrayList<SmsDataClass>();
 
@@ -45,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         while (cur.moveToNext())
         {
             SmsDataClass smsDataClass = new SmsDataClass();
-            //String address = cur.getString(cur.getColumnIndex("address"));
             smsDataClass.setBody(cur.getString(cur.getColumnIndexOrThrow("body")));
             smsDataClass.setAddress(cur.getString(cur.getColumnIndexOrThrow("address")));
             //sms.add(body);
