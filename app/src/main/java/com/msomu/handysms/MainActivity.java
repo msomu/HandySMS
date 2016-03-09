@@ -28,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar readingSmsProgressBar;
     private LinearLayout loadingReadSms;
 
+
+    private ArrayList<String> templateArrayList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("MainActivity", smsDataClasses.get(i).getAddress() + " " + smsTrasactional);
             if (smsTrasactional) {
                 transactionalSms++;
+
             }
         }
     }
