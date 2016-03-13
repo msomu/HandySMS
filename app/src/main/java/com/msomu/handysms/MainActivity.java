@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements SMSProviderViewAdapter.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements SmsViewAdapter.OnItemClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static List<ProviderModel> items = new ArrayList<>();
@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
     private TextView transactionalSMSCount;
     private TextView normalSMSCount;
     private SmsViewAdapter smsViewAdapter;
+
+    private DatabaseHelper db;
 
     private Pattern patternRs = Pattern.compile("(Rs ?.? ?\\d+\\.?(\\d{0,2})?\\.?)");
     //Pattern patternDebited = Pattern.compile("Debited");
@@ -64,15 +66,17 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
         normalSMSCount = (TextView) findViewById(R.id.normalSMSCount);
 
         initRecyclerView();
+        db = new DatabaseHelper(getApplicationContext());
 
-        new ReadSmsAndAnalyse().execute();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Updating Sms", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                db.clearDB();
+                new ReadSmsAndAnalyse().execute();
             }
         });
     }
@@ -84,14 +88,11 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
         // adapter.setOnItemClickListener(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         smsViewAdapter = new SmsViewAdapter(transactionalSmses);
+        smsViewAdapter.setOnItemClickListener(this);
         recyclerView.setAdapter(smsViewAdapter);
     }
 
-    @Override
-    public void onItemClick(View view, ProviderModel viewModel) {
-        Log.d(TAG, "Clicked " + viewModel.getProvider());
-        startActivity(TxSmsListActivity.makeIntent(this, viewModel.getId()));
-    }
+
 
     private void parseSms(List<SmsDataClass> smsDataClasses) {
         totalSms = smsDataClasses.size();
@@ -139,11 +140,13 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
                 SmsDataClass smsDataClass = new SmsDataClass();
                 smsDataClass.setBody(cur.getString(cur.getColumnIndexOrThrow("body")));
                 smsDataClass.setAddress(cur.getString(cur.getColumnIndexOrThrow("address")));
+                smsDataClass.setDate(cur.getString(cur.getColumnIndexOrThrow("date")));
                 //sms.add(body);
                 //Log.d("Cursor Body",body);
                 Log.d(" Sms Data ", smsDataClass.getAddress() + " : " + smsDataClass.getBody());
                 sms.add(smsDataClass);
             }
+            cur.close();
         }
 //        ProviderModel providerModel = new ProviderModel();
 //        providerModel.setSmsDataClassArrayList(sms);
@@ -151,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
 //        providerModel.setProvider("IOB");
         // items.add(providerModel);
         Log.d("MainActivity", "Total sms read" + sms.size());
-        cur.close();
         return sms;
 
     }
@@ -176,6 +178,11 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemClick(View view, SmsDataClass viewModel) {
+        startActivity(AddTemplateActivity.makeIntent(this, viewModel));
     }
 
     private class ReadSmsAndAnalyse extends AsyncTask<Void, Integer, Void> {

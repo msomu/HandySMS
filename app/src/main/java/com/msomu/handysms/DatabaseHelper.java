@@ -11,10 +11,12 @@ import com.msomu.handysms.model.ProviderModel;
 import com.msomu.handysms.model.SenderModel;
 import com.msomu.handysms.model.SmsDataClass;
 
+import java.util.ArrayList;
+
 /**
  * Created by msomu on 03/03/16.
  */
-public class DatabaseHandler extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
@@ -28,6 +30,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String SENDER_TABLE = "sender_table";
     private static final String SENDER_PROVIDER_TABLE = "sender_provider_table";
     private static final String SMS_TABLE = "sms_table";
+    private static final String TEMPLATE_TABLE = "template_table";
 
     private static final String ID = "_id";
     private static final String PROVIDER_NAME = "provider_name";
@@ -36,16 +39,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String PROVIDER_ID = "provider_id";
     private static final String SMS = "sms";
     private static final String DATE = "date_time";
+    private static final String TEMPLATE = "template";
 
-    private static final String CREATE_PROVIDER = "CREATE TABLE " + PROVIDER_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + PROVIDER_NAME + " TEXT NOT NULL);";
-    private static final String CREATE_SENDER = "CREATE TABLE " + SENDER_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + SENDER_CODE + " TEXT NOT NULL);";
-    private static final String CREATE_SENDER_PROVIDER = "CREATE TABLE " + SENDER_PROVIDER_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + SENDER_ID + " INT NOT NULL," + PROVIDER_ID + " INT NOT NULL);";
-    private static final String CREATE_SMS = "CREATE TABLE " + SMS_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + SENDER_ID + " TEXT NOT NULL," + SMS + " TEXT NOT NULL, " + DATE + " TIMESTAMP NOT NULL);";
-    private static final String TAG = DatabaseHandler.class.getSimpleName();
+    private static final String CREATE_PROVIDER = "CREATE TABLE " + PROVIDER_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + PROVIDER_NAME + " TEXT NOT NULL);";
+    private static final String CREATE_SENDER = "CREATE TABLE " + SENDER_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_CODE + " TEXT NOT NULL);";
+    private static final String CREATE_SENDER_PROVIDER = "CREATE TABLE " + SENDER_PROVIDER_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_ID + " INTEGER NOT NULL," + PROVIDER_ID + " INTEGER NOT NULL);";
+    private static final String CREATE_SMS = "CREATE TABLE " + SMS_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_ID + " TEXT NOT NULL," + SMS + " TEXT NOT NULL, " + DATE + " TIMESTAMP NOT NULL);";
+    private static final String CREATE_TEMPLATE = "CREATE TABLE " + TEMPLATE_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + TEMPLATE + " TEXT NOT NULL);";
+    private static final String TAG = DatabaseHelper.class.getSimpleName();
 
 
-    public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    public DatabaseHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
@@ -54,6 +59,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_SENDER);
         db.execSQL(CREATE_SENDER_PROVIDER);
         db.execSQL(CREATE_SMS);
+        db.execSQL(CREATE_TEMPLATE);
     }
 
     @Override
@@ -62,6 +68,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + SENDER_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + SENDER_PROVIDER_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + SMS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + TEMPLATE_TABLE);
+        onCreate(db);
+    }
+
+    public void clearDB() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + PROVIDER_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + SENDER_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + SENDER_PROVIDER_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + SMS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + TEMPLATE_TABLE);
         onCreate(db);
     }
 
@@ -73,8 +90,29 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(PROVIDER_NAME, providerModel.getProvider());
         // insert row
-        long providerId = db.insert(PROVIDER_TABLE, null, values);
-        return providerId;
+        return db.insert(PROVIDER_TABLE, null, values);
+    }
+
+    public ArrayList<ProviderModel> getAllProviders() {
+        ArrayList<ProviderModel> providers = new ArrayList<ProviderModel>();
+        String selectQuery = "SELECT  * FROM " + PROVIDER_TABLE;
+
+        Log.e(TAG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                ProviderModel td = new ProviderModel();
+                td.setId(c.getInt((c.getColumnIndex(ID))));
+                td.setProvider((c.getString(c.getColumnIndex(PROVIDER_NAME))));
+                providers.add(td);
+            } while (c.moveToNext());
+        }
+        c.close();
+        return providers;
     }
 
     /*
@@ -91,7 +129,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     /*
    * Map a sender
    */
-    public long mapSenderProvider(int senderId, int providerId) {
+    public long mapSenderProvider(long senderId, long providerId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(SENDER_ID, senderId);
