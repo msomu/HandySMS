@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static List<ProviderModel> items = new ArrayList<>();
+    private ArrayList<SmsDataClass> transactionalSmses;
 
     private int totalSms = 0;
     private int transactionalSms = 0;
@@ -39,6 +40,13 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
     private ProgressBar smsProgressBar;
     private TextView transactionalSMSCount;
     private TextView normalSMSCount;
+    private SmsViewAdapter smsViewAdapter;
+
+    private Pattern patternRs = Pattern.compile("(Rs ?.? ?\\d+\\.?(\\d{0,2})?\\.?)");
+    //Pattern patternDebited = Pattern.compile("Debited");
+    //Pattern patternWithdrawn = Pattern.compile("withdrawn");
+    //Pattern patternTxn = Pattern.compile("txn");
+    //Pattern patternCredited = Pattern.compile("Debited");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        transactionalSmses = new ArrayList<>();
         readingSmsProgressBar = (ProgressBar) findViewById(R.id.loadingProgressBar);
         loadingReadSms = (LinearLayout) findViewById(R.id.loading);
         data = (LinearLayout) findViewById(R.id.data);
@@ -70,10 +79,12 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
 
     private void initRecyclerView() {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        SMSProviderViewAdapter adapter = new SMSProviderViewAdapter(items);
-        adapter.setOnItemClickListener(this);
-        recyclerView.setAdapter(adapter);
+        //recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        //SMSProviderViewAdapter adapter = new SMSProviderViewAdapter(items);
+        // adapter.setOnItemClickListener(this);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        smsViewAdapter = new SmsViewAdapter(transactionalSmses);
+        recyclerView.setAdapter(smsViewAdapter);
     }
 
     @Override
@@ -90,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
             if (smsTrasactional) {
                 if (checkForRs(smsDataClasses.get(i).getBody())) {
                     transactionalSms++;
+                    transactionalSmses.add(smsDataClasses.get(i));
                 }
             }
         }
@@ -97,11 +109,16 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
 
     private boolean checkForRs(String body) {
         Log.d(TAG, "Trying to match : " + body);
-        Pattern pattern = Pattern.compile("(Rs ?.? ?\\d+\\.?(\\d{0,2})?\\.?)");
-        Matcher matcher = pattern.matcher(body);
+        Matcher matcher = patternRs.matcher(body);
         if (matcher.find()) {
             Log.d(TAG, "Matched " + matcher.group(1));
+//            matcher = patternDebited.matcher(body);
+//            if (matcher.find()) {
+//                Log.d(TAG, "Matched Debited");
             return true;
+//            }else{
+//                return false;
+//            }
         } else {
             Log.d(TAG, "No Match");
             return false;
@@ -128,11 +145,11 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
                 sms.add(smsDataClass);
             }
         }
-        ProviderModel providerModel = new ProviderModel();
-        providerModel.setSmsDataClassArrayList(sms);
-        providerModel.setId(0);
-        providerModel.setProvider("IOB");
-        items.add(providerModel);
+//        ProviderModel providerModel = new ProviderModel();
+//        providerModel.setSmsDataClassArrayList(sms);
+//        providerModel.setId(0);
+//        providerModel.setProvider("IOB");
+        // items.add(providerModel);
         Log.d("MainActivity", "Total sms read" + sms.size());
         cur.close();
         return sms;
@@ -185,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
             normalSMSCount.setText("Personal SMS : " + normalSms);
             smsProgressBar.setMax(totalSms);
             smsProgressBar.setProgress(transactionalSms);
+            smsViewAdapter.notifyDataSetChanged();
         }
 
         @Override

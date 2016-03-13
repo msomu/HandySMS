@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/text_body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Rs.200.00 debited to sb-1380.AcBal:746.00[CLRBal:746.00:PAYU-www.olacabs.com-O151 ]-KATTUPAKKAM on 24.11.15-AT www.iob.in REGISTER for NETBANKING" />

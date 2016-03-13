@@ -70,7 +70,7 @@ public class SmsViewAdapter extends RecyclerView.Adapter<SmsViewAdapter.ViewHold
 
         public ViewHolder(View itemView) {
             super(itemView);
-            text = (TextView) itemView.findViewById(R.id.text);
+            text = (TextView) itemView.findViewById(R.id.text_body);
         }
     }
 }
