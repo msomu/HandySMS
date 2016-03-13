@@ -23,12 +23,14 @@ import com.msomu.handysms.model.SmsDataClass;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements SMSProviderViewAdapter.OnItemClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static List<ProviderModel> items = new ArrayList<>();
-    private String transationalAddressPattern = "(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$";
+
     private int totalSms = 0;
     private int transactionalSms = 0;
     private ProgressBar readingSmsProgressBar;
@@ -86,16 +88,31 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
             boolean smsTrasactional = findTransactionalSmsOrNot(smsDataClasses.get(i));
             Log.d("MainActivity", smsDataClasses.get(i).getAddress() + " " + smsTrasactional);
             if (smsTrasactional) {
-                transactionalSms++;
+                if (checkForRs(smsDataClasses.get(i).getBody())) {
+                    transactionalSms++;
+                }
             }
         }
     }
 
-    private boolean findTransactionalSmsOrNot(SmsDataClass smsDataClass) {
-        return smsDataClass.getAddress() != null && smsDataClass.getAddress().matches(transationalAddressPattern);
+    private boolean checkForRs(String body) {
+        Log.d(TAG, "Trying to match : " + body);
+        Pattern pattern = Pattern.compile("(Rs ?.? ?\\d+\\.?(\\d{0,2})?\\.?)");
+        Matcher matcher = pattern.matcher(body);
+        if (matcher.find()) {
+            Log.d(TAG, "Matched " + matcher.group(1));
+            return true;
+        } else {
+            Log.d(TAG, "No Match");
+            return false;
+        }
     }
 
-    public List<SmsDataClass> readAllMessage(){
+    private boolean findTransactionalSmsOrNot(SmsDataClass smsDataClass) {
+        return smsDataClass.getAddress() != null && smsDataClass.getAddress().matches("(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$");
+    }
+
+    public List<SmsDataClass> readAllMessage() {
         ArrayList<SmsDataClass> sms = new ArrayList<SmsDataClass>();
 
         Uri uriSMSURI = Uri.parse("content://sms/inbox");
@@ -116,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements SMSProviderViewAd
         providerModel.setId(0);
         providerModel.setProvider("IOB");
         items.add(providerModel);
-        Log.d("MainActivity","Total sms read"+sms.size());
+        Log.d("MainActivity", "Total sms read" + sms.size());
         cur.close();
         return sms;
 
