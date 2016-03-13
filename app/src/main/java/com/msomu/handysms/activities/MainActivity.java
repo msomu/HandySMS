@@ -1,4 +1,4 @@
-package com.msomu.handysms;
+package com.msomu.handysms.activities;
 
 import android.database.Cursor;
 import android.net.Uri;
@@ -18,8 +18,12 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.msomu.handysms.model.ProviderModel;
-import com.msomu.handysms.model.SmsDataClass;
+import com.msomu.handysms.DatabaseHelper;
+import com.msomu.handysms.R;
+import com.msomu.handysms.adapters.CategorisedSMSAdapter;
+import com.msomu.handysms.adapters.SmsViewAdapter;
+import com.msomu.handysms.models.ProviderModel;
+import com.msomu.handysms.models.SmsDataClass;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
     //Pattern patternTxn = Pattern.compile("txn");
     //Pattern patternCredited = Pattern.compile("Debited");
 
+
+    /**
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,12 +88,18 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
         });
     }
 
+    /**
+     * Used to refresh the view
+     */
     private void refresh() {
         items.clear();
         items.addAll(db.getAllProviders());
         categorisedSMSAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Initiataion of RecyclerViews
+     */
     private void initRecyclerView() {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
         RecyclerView categorisedSmsRecyclerView = (RecyclerView) findViewById(R.id.categorisedSms);
@@ -103,6 +117,10 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
     }
 
 
+    /**
+     *
+     * @param smsDataClasses is the sms's read from the Inbox
+     */
     private void parseSms(List<SmsDataClass> smsDataClasses) {
         totalSms = smsDataClasses.size();
         for (int i = 0; i < smsDataClasses.size(); i++) {
@@ -124,6 +142,12 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
         }
     }
 
+    /**
+     *
+     * @param body Is the message of the sms Checking for Rs . String in it
+     *             Had Idea of checking scenarios like debited, credited, purchased
+     * @return
+     */
     private boolean checkForRs(String body) {
         Log.d(TAG, "Trying to match : " + body);
         Matcher matcher = patternRs.matcher(body);
@@ -142,10 +166,19 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
         }
     }
 
+    /**
+     *
+     * @param smsDataClass The basic identification is it a personal sms or non personal SMS
+     * @return
+     */
     private boolean findTransactionalSmsOrNot(SmsDataClass smsDataClass) {
         return smsDataClass.getAddress() != null && smsDataClass.getAddress().matches("(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$");
     }
 
+    /**
+     *
+     * @return
+     */
     public List<SmsDataClass> readAllMessage() {
         ArrayList<SmsDataClass> sms = new ArrayList<SmsDataClass>();
 

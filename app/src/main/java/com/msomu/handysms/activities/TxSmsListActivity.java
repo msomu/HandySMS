@@ -1,4 +1,4 @@
-package com.msomu.handysms;
+package com.msomu.handysms.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,7 +11,10 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-import com.msomu.handysms.model.SmsDataClass;
+import com.msomu.handysms.DatabaseHelper;
+import com.msomu.handysms.R;
+import com.msomu.handysms.adapters.SmsViewAdapter;
+import com.msomu.handysms.models.SmsDataClass;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.msomu.handysms;
+package com.msomu.handysms.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -6,7 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.msomu.handysms.model.ProviderModel;
+import com.msomu.handysms.R;
+import com.msomu.handysms.models.ProviderModel;
 
 import java.util.List;
 

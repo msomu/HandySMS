@@ -1,4 +1,4 @@
-package com.msomu.handysms;
+package com.msomu.handysms.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,9 +12,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.msomu.handysms.model.ProviderModel;
-import com.msomu.handysms.model.SenderModel;
-import com.msomu.handysms.model.SmsDataClass;
+import com.msomu.handysms.DatabaseHelper;
+import com.msomu.handysms.R;
+import com.msomu.handysms.models.ProviderModel;
+import com.msomu.handysms.models.SenderModel;
+import com.msomu.handysms.models.SmsDataClass;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.msomu.handysms.model;
+package com.msomu.handysms.models;
 
 /**
  * Created by msomu on 02/03/16.

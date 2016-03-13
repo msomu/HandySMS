@@ -1,4 +1,4 @@
-package com.msomu.handysms.model;
+package com.msomu.handysms.models;
 
 import java.util.ArrayList;
 

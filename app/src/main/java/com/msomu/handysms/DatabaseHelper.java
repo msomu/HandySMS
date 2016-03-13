@@ -7,9 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.msomu.handysms.model.ProviderModel;
-import com.msomu.handysms.model.SenderModel;
-import com.msomu.handysms.model.SmsDataClass;
+import com.msomu.handysms.models.ProviderModel;
+import com.msomu.handysms.models.SenderModel;
+import com.msomu.handysms.models.SmsDataClass;
 
 import java.util.ArrayList;
 
@@ -146,7 +146,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /*
-    * Creating a sender
+    * Inserting a sender
     */
     public long createSender(SenderModel senderModel) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -157,7 +157,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /*
-   * Map a sender
+   * Map a sender and provider realtionship
    */
     public long mapSenderProvider(long senderId, long providerId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -166,20 +166,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(PROVIDER_ID, providerId);
         // insert row
         return db.insert(SENDER_PROVIDER_TABLE, null, values);
-    }
-
-    public long addSMS(SmsDataClass smsDataClass) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(SMS, smsDataClass.getBody());
-        values.put(DATE, smsDataClass.getDate());
-        //  values.put(SENDER_ID, smsDataClass.getAddress());
-        // insert row
-        return db.insert(SMS_TABLE, null, values);
-    }
-
-    public long getProviderIdFromSenderId() {
-        return -1;
     }
 
     public ArrayList<SmsDataClass> getAllSmsOfProvider(int providerId) {
