@@ -88,6 +88,13 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        db.clearDB();
+        new ReadSmsAndAnalyse().execute();
+    }
+
     /**
      * Used to refresh the view
      */
