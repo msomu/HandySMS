@@ -1,4 +1,4 @@
-package com.msomu.handysms;
+package com.msomu.handysms.model;
 
 /**
  * Created by msomu on 02/03/16.
@@ -8,7 +8,10 @@ public class SmsDataClass {
     private String body;
     private String date;
     private String type;
-    private String id;
+    private int id;
+
+    public SmsDataClass() {
+    }
 
     public String getAddress() {
         return address;
@@ -42,11 +45,11 @@ public class SmsDataClass {
         this.type = type;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 }

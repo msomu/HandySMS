@@ -1,7 +1,5 @@
 package com.msomu.handysms;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -9,6 +7,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -16,20 +16,27 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import com.msomu.handysms.model.ProviderModel;
+import com.msomu.handysms.model.SmsDataClass;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SMSProviderViewAdapter.OnItemClickListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static List<ProviderModel> items = new ArrayList<>();
     private String transationalAddressPattern = "(?!^\\d+$)^(?!^\\+)^(?!^\\d+\\t*\\d)^.+$";
     private int totalSms = 0;
     private int transactionalSms = 0;
     private ProgressBar readingSmsProgressBar;
     private LinearLayout loadingReadSms;
-
-
-    private ArrayList<String> templateArrayList = new ArrayList<>();
+    private LinearLayout data;
+    private ProgressBar smsProgressBar;
+    private TextView transactionalSMSCount;
+    private TextView normalSMSCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         readingSmsProgressBar = (ProgressBar) findViewById(R.id.loadingProgressBar);
         loadingReadSms = (LinearLayout) findViewById(R.id.loading);
+        data = (LinearLayout) findViewById(R.id.data);
+
+        smsProgressBar = (ProgressBar) findViewById(R.id.smsProgrssBar);
+        transactionalSMSCount = (TextView) findViewById(R.id.transactionalSMSCount);
+        normalSMSCount = (TextView) findViewById(R.id.normalSMSCount);
+
+        initRecyclerView();
 
         new ReadSmsAndAnalyse().execute();
 
@@ -52,11 +66,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void fragmentShow() {
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.frame_layout, MainActivityFragment.newInstance(totalSms, transactionalSms));
-        fragmentTransaction.commit();
+    private void initRecyclerView() {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        SMSProviderViewAdapter adapter = new SMSProviderViewAdapter(items);
+        adapter.setOnItemClickListener(this);
+        recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public void onItemClick(View view, ProviderModel viewModel) {
+        Log.d(TAG, "Clicked " + viewModel.getProvider());
+        startActivity(TxSmsListActivity.makeIntent(this, viewModel.getId()));
     }
 
     private void parseSms(List<SmsDataClass> smsDataClasses) {
@@ -66,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d("MainActivity", smsDataClasses.get(i).getAddress() + " " + smsTrasactional);
             if (smsTrasactional) {
                 transactionalSms++;
-
             }
         }
     }
@@ -76,20 +96,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public List<SmsDataClass> readAllMessage(){
-        List<SmsDataClass> sms = new ArrayList<SmsDataClass>();
+        ArrayList<SmsDataClass> sms = new ArrayList<SmsDataClass>();
 
         Uri uriSMSURI = Uri.parse("content://sms/inbox");
         Cursor cur = getContentResolver().query(uriSMSURI, null, null, null, null);
-        while (cur.moveToNext())
-        {
-            SmsDataClass smsDataClass = new SmsDataClass();
-            smsDataClass.setBody(cur.getString(cur.getColumnIndexOrThrow("body")));
-            smsDataClass.setAddress(cur.getString(cur.getColumnIndexOrThrow("address")));
-            //sms.add(body);
-            //Log.d("Cursor Body",body);
-            Log.d(" Sms Data ",smsDataClass.getAddress()+" : "+smsDataClass.getBody());
-            sms.add(smsDataClass);
+        if (cur != null) {
+            while (cur.moveToNext()) {
+                SmsDataClass smsDataClass = new SmsDataClass();
+                smsDataClass.setBody(cur.getString(cur.getColumnIndexOrThrow("body")));
+                smsDataClass.setAddress(cur.getString(cur.getColumnIndexOrThrow("address")));
+                //sms.add(body);
+                //Log.d("Cursor Body",body);
+                Log.d(" Sms Data ", smsDataClass.getAddress() + " : " + smsDataClass.getBody());
+                sms.add(smsDataClass);
+            }
         }
+        ProviderModel providerModel = new ProviderModel();
+        providerModel.setSmsDataClassArrayList(sms);
+        providerModel.setId(0);
+        providerModel.setProvider("IOB");
+        items.add(providerModel);
         Log.d("MainActivity","Total sms read"+sms.size());
         cur.close();
         return sms;
@@ -136,7 +162,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             loadingReadSms.setVisibility(View.GONE);
-            fragmentShow();
+            data.setVisibility(View.VISIBLE);
+            transactionalSMSCount.setText("Transactional SMS : " + transactionalSms);
+            int normalSms = totalSms - transactionalSms;
+            normalSMSCount.setText("Personal SMS : " + normalSms);
+            smsProgressBar.setMax(totalSms);
+            smsProgressBar.setProgress(transactionalSms);
         }
 
         @Override

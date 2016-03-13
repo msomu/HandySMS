@@ -5,9 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.msomu.handysms.model.ProviderModel;
+import com.msomu.handysms.model.SenderModel;
+import com.msomu.handysms.model.SmsDataClass;
 
 /**
  * Created by msomu on 03/03/16.
@@ -39,6 +41,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String CREATE_SENDER = "CREATE TABLE " + SENDER_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + SENDER_CODE + " TEXT NOT NULL);";
     private static final String CREATE_SENDER_PROVIDER = "CREATE TABLE " + SENDER_PROVIDER_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + SENDER_ID + " INT NOT NULL," + PROVIDER_ID + " INT NOT NULL);";
     private static final String CREATE_SMS = "CREATE TABLE " + SMS_TABLE + " (" + ID + " INT PRIMARY KEY NOT NULL," + SENDER_ID + " TEXT NOT NULL," + SMS + " TEXT NOT NULL, " + DATE + " TIMESTAMP NOT NULL);";
+    private static final String TAG = DatabaseHandler.class.getSimpleName();
 
 
     public DatabaseHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -107,22 +110,66 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return db.insert(SMS_TABLE, null, values);
     }
 
-    public List<ProviderModel> getProviders() {
-        List<ProviderModel> providerModels = new ArrayList<>();
+    /*
+ * get single provider
+ */
+    public ProviderModel getProvider(long providerId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT  * FROM " + PROVIDER_TABLE;
-        Cursor c = db.rawQuery(selectQuery, null);
-        if (c.moveToFirst()) {
-            do {
-                ProviderModel providerModel = new ProviderModel();
-                providerModel.setId(c.getInt((c.getColumnIndex(ID))));
-                providerModel.setProvider((c.getString(c.getColumnIndex(PROVIDER_NAME))));
 
-                // adding to provider list
-                providerModels.add(providerModel);
-            } while (c.moveToNext());
-        }
+        String selectQuery = "SELECT  * FROM " + PROVIDER_TABLE + " WHERE "
+                + ID + " = " + providerId;
+
+        Log.e(TAG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        ProviderModel providerModel = new ProviderModel();
+        providerModel.setId(c.getInt(c.getColumnIndex(ID)));
+        providerModel.setProvider((c.getString(c.getColumnIndex(PROVIDER_NAME))));
         c.close();
-        return providerModels;
+        return providerModel;
+    }
+
+    public SenderModel getSenderCode(long senderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + SENDER_TABLE + " WHERE "
+                + ID + " = " + senderId;
+
+        Log.e(TAG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        SenderModel senderModel = new SenderModel();
+        senderModel.setId(c.getInt(c.getColumnIndex(ID)));
+        senderModel.setSender((c.getString(c.getColumnIndex(SENDER_CODE))));
+        c.close();
+        return senderModel;
+    }
+
+    public SenderModel getSenderId(String senderCode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + SENDER_TABLE + " WHERE "
+                + SENDER_CODE + " = " + senderCode;
+
+        Log.e(TAG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        SenderModel senderModel = new SenderModel();
+        senderModel.setId(c.getInt(c.getColumnIndex(ID)));
+        senderModel.setSender((c.getString(c.getColumnIndex(SENDER_CODE))));
+        c.close();
+        return senderModel;
     }
 }

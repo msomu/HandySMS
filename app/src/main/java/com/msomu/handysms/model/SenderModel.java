@@ -1,4 +1,4 @@
-package com.msomu.handysms;
+package com.msomu.handysms.model;
 
 /**
  * Created by msomu on 10/03/16.
@@ -6,11 +6,6 @@ package com.msomu.handysms;
 public class SenderModel {
     private int id;
     private String sender;
-
-    public SenderModel(int id, String sender) {
-        this.id = id;
-        this.sender = sender;
-    }
 
     public String getSender() {
         return sender;
