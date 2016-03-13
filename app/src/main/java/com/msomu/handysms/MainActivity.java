@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements SmsViewAdapter.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements SmsViewAdapter.OnItemClickListener, CategorisedSMSAdapter.OnItemClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static List<ProviderModel> items = new ArrayList<>();
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
     private TextView transactionalSMSCount;
     private TextView normalSMSCount;
     private SmsViewAdapter smsViewAdapter;
-
+    private CategorisedSMSAdapter categorisedSMSAdapter;
     private DatabaseHelper db;
 
     private Pattern patternRs = Pattern.compile("(Rs ?.? ?\\d+\\.?(\\d{0,2})?\\.?)");
@@ -67,8 +67,7 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
 
         initRecyclerView();
         db = new DatabaseHelper(getApplicationContext());
-
-
+        refresh();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,17 +80,27 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
         });
     }
 
+    private void refresh() {
+        items.clear();
+        items.addAll(db.getAllProviders());
+        categorisedSMSAdapter.notifyDataSetChanged();
+    }
+
     private void initRecyclerView() {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
+        RecyclerView categorisedSmsRecyclerView = (RecyclerView) findViewById(R.id.categorisedSms);
         //recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         //SMSProviderViewAdapter adapter = new SMSProviderViewAdapter(items);
         // adapter.setOnItemClickListener(this);
+        categorisedSmsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        categorisedSMSAdapter = new CategorisedSMSAdapter(items);
+        categorisedSmsRecyclerView.setAdapter(categorisedSMSAdapter);
+        categorisedSMSAdapter.setOnItemClickListener(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         smsViewAdapter = new SmsViewAdapter(transactionalSmses);
         smsViewAdapter.setOnItemClickListener(this);
         recyclerView.setAdapter(smsViewAdapter);
     }
-
 
 
     private void parseSms(List<SmsDataClass> smsDataClasses) {
@@ -102,7 +111,14 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
             if (smsTrasactional) {
                 if (checkForRs(smsDataClasses.get(i).getBody())) {
                     transactionalSms++;
-                    transactionalSmses.add(smsDataClasses.get(i));
+                    long senderID = db.getSenderID(smsDataClasses.get(i).getAddress());
+                    if (senderID == -1) {
+                        Log.d(TAG, "Added " + senderID);
+                        transactionalSmses.add(smsDataClasses.get(i));
+                    } else {
+                        Log.d(TAG, "Skiped " + senderID);
+                        db.createSMS(smsDataClasses.get(i).getBody(), senderID, smsDataClasses.get(i).getDate());
+                    }
                 }
             }
         }
@@ -185,12 +201,20 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
         startActivity(AddTemplateActivity.makeIntent(this, viewModel));
     }
 
+    @Override
+    public void onItemClick(View view, ProviderModel providerModel) {
+        startActivity(TxSmsListActivity.makeIntent(this, providerModel.getId()));
+    }
+
     private class ReadSmsAndAnalyse extends AsyncTask<Void, Integer, Void> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             loadingReadSms.setVisibility(View.VISIBLE);
+            data.setVisibility(View.GONE);
+            totalSms = 0;
+            transactionalSms = 0;
             readingSmsProgressBar.setProgress(0);
         }
 
@@ -210,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements SmsViewAdapter.On
             smsProgressBar.setMax(totalSms);
             smsProgressBar.setProgress(transactionalSms);
             smsViewAdapter.notifyDataSetChanged();
+            refresh();
         }
 
         @Override

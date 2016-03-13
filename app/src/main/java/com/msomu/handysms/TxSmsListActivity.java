@@ -22,6 +22,7 @@ public class TxSmsListActivity extends AppCompatActivity implements SmsViewAdapt
     private static final String EXTRAS = "KEY_EXTRAS";
     private List<SmsDataClass> smsDataClasses;
     private int providerId;
+    private DatabaseHelper db;
 
     public static Intent makeIntent(Activity activity, int provideId) {
         Intent intent = new Intent(activity, TxSmsListActivity.class);
@@ -35,6 +36,7 @@ public class TxSmsListActivity extends AppCompatActivity implements SmsViewAdapt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tx_sms_list);
+        db = new DatabaseHelper(getApplicationContext());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         smsDataClasses = new ArrayList<>();
@@ -42,9 +44,13 @@ public class TxSmsListActivity extends AppCompatActivity implements SmsViewAdapt
             Bundle bundle = getIntent().getExtras().getBundle(EXTRAS);
             if (bundle != null) {
                 providerId = bundle.getInt(KEY_PROVIDER_SMS);
+                ArrayList<SmsDataClass> allSmsOfProvider = db.getAllSmsOfProvider(providerId);
+                smsDataClasses.clear();
+                smsDataClasses.addAll(allSmsOfProvider);
                 initRecyclerView();
             }
         }
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

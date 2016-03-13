@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_PROVIDER = "CREATE TABLE " + PROVIDER_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + PROVIDER_NAME + " TEXT NOT NULL);";
     private static final String CREATE_SENDER = "CREATE TABLE " + SENDER_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_CODE + " TEXT NOT NULL);";
     private static final String CREATE_SENDER_PROVIDER = "CREATE TABLE " + SENDER_PROVIDER_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_ID + " INTEGER NOT NULL," + PROVIDER_ID + " INTEGER NOT NULL);";
-    private static final String CREATE_SMS = "CREATE TABLE " + SMS_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_ID + " TEXT NOT NULL," + SMS + " TEXT NOT NULL, " + DATE + " TIMESTAMP NOT NULL);";
+    private static final String CREATE_SMS = "CREATE TABLE " + SMS_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + SENDER_ID + " INTEGER NOT NULL," + SMS + " TEXT NOT NULL, " + DATE + " TIMESTAMP NOT NULL);";
     private static final String CREATE_TEMPLATE = "CREATE TABLE " + TEMPLATE_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + TEMPLATE + " TEXT NOT NULL);";
     private static final String TAG = DatabaseHelper.class.getSimpleName();
 
@@ -55,6 +55,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.d(TAG, CREATE_PROVIDER);
+        Log.d(TAG, CREATE_SENDER);
+        Log.d(TAG, CREATE_SENDER_PROVIDER);
+        Log.d(TAG, CREATE_SMS);
+        Log.d(TAG, CREATE_TEMPLATE);
+
         db.execSQL(CREATE_PROVIDER);
         db.execSQL(CREATE_SENDER);
         db.execSQL(CREATE_SENDER_PROVIDER);
@@ -74,12 +80,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void clearDB() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DROP TABLE IF EXISTS " + PROVIDER_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + SENDER_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + SENDER_PROVIDER_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + SMS_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + TEMPLATE_TABLE);
-        onCreate(db);
+        db.execSQL(CREATE_SMS);
     }
 
     /*
@@ -93,11 +95,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(PROVIDER_TABLE, null, values);
     }
 
+    public long createSMS(String body, long senderId, String date) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(SMS, body);
+        values.put(SENDER_ID, senderId);
+        values.put(DATE, date);
+        // insert row
+        return db.insert(SMS_TABLE, null, values);
+    }
+
     public ArrayList<ProviderModel> getAllProviders() {
         ArrayList<ProviderModel> providers = new ArrayList<ProviderModel>();
         String selectQuery = "SELECT  * FROM " + PROVIDER_TABLE;
 
-        Log.e(TAG, selectQuery);
+        Log.d(TAG, selectQuery);
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -113,6 +125,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         c.close();
         return providers;
+    }
+
+    public long getSenderID(String addr) {
+
+        String selectQuery = "SELECT " + ID + " FROM " + SENDER_TABLE + " WHERE " + SENDER_CODE + " = " + "'" + addr + "'";
+
+        Log.d(TAG, selectQuery);
+        long id = -1;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            id = c.getInt(c.getColumnIndex(ID));
+        }
+        c.close();
+        return id;
     }
 
     /*
@@ -148,66 +178,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(SMS_TABLE, null, values);
     }
 
-    /*
- * get single provider
- */
-    public ProviderModel getProvider(long providerId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String selectQuery = "SELECT  * FROM " + PROVIDER_TABLE + " WHERE "
-                + ID + " = " + providerId;
-
-        Log.e(TAG, selectQuery);
-
-        Cursor c = db.rawQuery(selectQuery, null);
-
-        if (c != null)
-            c.moveToFirst();
-
-        ProviderModel providerModel = new ProviderModel();
-        providerModel.setId(c.getInt(c.getColumnIndex(ID)));
-        providerModel.setProvider((c.getString(c.getColumnIndex(PROVIDER_NAME))));
-        c.close();
-        return providerModel;
+    public long getProviderIdFromSenderId() {
+        return -1;
     }
 
-    public SenderModel getSenderCode(long senderId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String selectQuery = "SELECT  * FROM " + SENDER_TABLE + " WHERE "
-                + ID + " = " + senderId;
-
-        Log.e(TAG, selectQuery);
-
-        Cursor c = db.rawQuery(selectQuery, null);
-
-        if (c != null)
-            c.moveToFirst();
-
-        SenderModel senderModel = new SenderModel();
-        senderModel.setId(c.getInt(c.getColumnIndex(ID)));
-        senderModel.setSender((c.getString(c.getColumnIndex(SENDER_CODE))));
-        c.close();
-        return senderModel;
-    }
-
-    public SenderModel getSenderId(String senderCode) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String selectQuery = "SELECT  * FROM " + SENDER_TABLE + " WHERE "
-                + SENDER_CODE + " = " + senderCode;
-
-        Log.e(TAG, selectQuery);
-
-        Cursor c = db.rawQuery(selectQuery, null);
-
-        if (c != null)
-            c.moveToFirst();
-
-        SenderModel senderModel = new SenderModel();
-        senderModel.setId(c.getInt(c.getColumnIndex(ID)));
-        senderModel.setSender((c.getString(c.getColumnIndex(SENDER_CODE))));
-        c.close();
-        return senderModel;
+    public ArrayList<SmsDataClass> getAllSmsOfProvider(int providerId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ArrayList<SmsDataClass> smsDataClasses = new ArrayList<>();
+        //SELECT     sms_table.sms,              sms_table.date_time,            provider_table.provider_name             FROM     sms_table      JOIN  sender_table ON sms_table.sender_id = sender_table._id                                    JOIN sender_provider_table ON sender_provider_table.sender_id = sender_table._id JOIN provider_table ON provider_table._id = sender_provider_table.provider_id WHERE sender_provider_table.provider_id=1;
+        String QUERY = "SELECT " + SMS_TABLE + "." + SMS + ", " + SMS_TABLE + "." + DATE + ", " + SENDER_TABLE + "." + SENDER_CODE + " FROM " + SMS_TABLE + " JOIN " + SENDER_TABLE + " ON " + SMS_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID + " JOIN " + SENDER_PROVIDER_TABLE + " ON " + SENDER_PROVIDER_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID + " JOIN " + PROVIDER_TABLE + " ON " + PROVIDER_TABLE + "." + ID + " = " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID + " WHERE " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID + "=" + providerId + ";";
+        Cursor cursor = db.rawQuery(QUERY, null);
+        if (cursor.moveToFirst()) {
+            do {
+                SmsDataClass sms = new SmsDataClass();
+                sms.setDate((cursor.getString(cursor.getColumnIndex(DATE))));
+                sms.setAddress((cursor.getString(cursor.getColumnIndex(SENDER_CODE))));
+                sms.setBody((cursor.getString(cursor.getColumnIndex(SMS))));
+                smsDataClasses.add(sms);
+            } while (cursor.moveToNext());
+        }
+        return smsDataClasses;
     }
 }

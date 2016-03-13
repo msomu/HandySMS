@@ -13,7 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <TextView
             style="@style/TextAppearance.AppCompat.Body1"
@@ -38,7 +39,7 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <ProgressBar
             android:id="@+id/smsProgrssBar"
@@ -68,6 +69,24 @@
                 android:text="Personal SMS : 100" />
         </RelativeLayout>
 
+        <TextView
+            style="@style/Base.TextAppearance.AppCompat.Body2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/spacing_xsmall"
+            android:text="Categorised SMS" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/categorisedSms"
+            android:layout_width="match_parent"
+            android:layout_height="40dp" />
+
+        <TextView
+            style="@style/Base.TextAppearance.AppCompat.Body2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/spacing_xsmall"
+            android:text="Not Categorised SMS's" />
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler"
             android:layout_width="match_parent"
