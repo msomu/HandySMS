@@ -6,13 +6,20 @@
 
     <TextView
         android:id="@+id/text_body"
+        style="@style/Base.TextAppearance.AppCompat.Body1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_large"
+        android:layout_marginRight="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
         android:text="Rs.200.00 debited to sb-1380.AcBal:746.00[CLRBal:746.00:PAYU-www.olacabs.com-O151 ]-KATTUPAKKAM on 24.11.15-AT www.iob.in REGISTER for NETBANKING" />
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_medium"
+        android:layout_marginRight="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_medium">
 
         <TextView
             android:id="@+id/date"
@@ -33,4 +40,10 @@
             android:layout_alignParentRight="true"
             android:text="AD-IOBCHN" />
     </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="@dimen/spacing_xsmall"
+        android:background="@android:color/darker_gray" />
 </LinearLayout>

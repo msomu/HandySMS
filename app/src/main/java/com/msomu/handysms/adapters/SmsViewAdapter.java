@@ -39,7 +39,7 @@ public class SmsViewAdapter extends RecyclerView.Adapter<SmsViewAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         SmsDataClass item = items.get(position);
         holder.text.setText(item.getBody());
-        holder.date.setText(item.getDate());
+        holder.date.setText("" + item.getDate());
         holder.sender.setText(item.getAddress());
         holder.itemView.setTag(item);
     }
