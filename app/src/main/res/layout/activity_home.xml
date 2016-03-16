@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".activities.TxSmsListActivity">
+    tools:context="com.msomu.handysms.activities.HomeActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -21,7 +21,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_tx_sms_list" />
+    <include layout="@layout/content_home" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
