@@ -107,7 +107,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public ArrayList<ProviderModel> getAllProviders() {
         ArrayList<ProviderModel> providers = new ArrayList<ProviderModel>();
-        String selectQuery = "SELECT  * FROM " + PROVIDER_TABLE;
+        String selectQuery = "SELECT " + PROVIDER_TABLE + "." + ID + "," + PROVIDER_TABLE + "." + PROVIDER_NAME + ", count(*) as num " +
+                " FROM " + SMS_TABLE
+                + " JOIN " + SENDER_TABLE + " ON " + SMS_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID
+                + " JOIN " + SENDER_PROVIDER_TABLE + " ON " + SENDER_PROVIDER_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID
+                + " JOIN " + PROVIDER_TABLE + " ON " + PROVIDER_TABLE + "." + ID + " = " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID
+                + " GROUP BY " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID + ";";
 
         Log.d(TAG, selectQuery);
 
@@ -120,6 +125,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 ProviderModel td = new ProviderModel();
                 td.setId(c.getInt((c.getColumnIndex(ID))));
                 td.setProvider((c.getString(c.getColumnIndex(PROVIDER_NAME))));
+                td.setTotalSms(c.getInt(c.getColumnIndex("num")));
                 providers.add(td);
             } while (c.moveToNext());
         }
@@ -172,7 +178,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<SmsDataClass> smsDataClasses = new ArrayList<>();
         //SELECT     sms_table.sms,              sms_table.date_time,            provider_table.provider_name             FROM     sms_table      JOIN  sender_table ON sms_table.sender_id = sender_table._id                                    JOIN sender_provider_table ON sender_provider_table.sender_id = sender_table._id JOIN provider_table ON provider_table._id = sender_provider_table.provider_id WHERE sender_provider_table.provider_id=1;
-        String QUERY = "SELECT " + SMS_TABLE + "." + SMS + ", " + SMS_TABLE + "." + DATE + ", " + SENDER_TABLE + "." + SENDER_CODE + " FROM " + SMS_TABLE + " JOIN " + SENDER_TABLE + " ON " + SMS_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID + " JOIN " + SENDER_PROVIDER_TABLE + " ON " + SENDER_PROVIDER_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID + " JOIN " + PROVIDER_TABLE + " ON " + PROVIDER_TABLE + "." + ID + " = " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID + " WHERE " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID + "=" + providerId + ";";
+        String QUERY = "SELECT " + SMS_TABLE + "." + SMS + ", " + SMS_TABLE + "." + DATE + ", " + SENDER_TABLE + "." + SENDER_CODE
+                + " FROM " + SMS_TABLE
+                + " JOIN " + SENDER_TABLE + " ON " + SMS_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID
+                + " JOIN " + SENDER_PROVIDER_TABLE + " ON " + SENDER_PROVIDER_TABLE + "." + SENDER_ID + " = " + SENDER_TABLE + "." + ID
+                + " JOIN " + PROVIDER_TABLE + " ON " + PROVIDER_TABLE + "." + ID + " = " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID
+                + " WHERE " + SENDER_PROVIDER_TABLE + "." + PROVIDER_ID + "=" + providerId + ";";
         Cursor cursor = db.rawQuery(QUERY, null);
         if (cursor.moveToFirst()) {
             do {

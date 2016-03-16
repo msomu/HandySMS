@@ -37,7 +37,7 @@ public class CategorisedSMSAdapter extends RecyclerView.Adapter<CategorisedSMSAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         ProviderModel item = items.get(position);
-        holder.text.setText(item.getProvider());
+        holder.text.setText(item.getProvider() + " (" + item.getTotalSms() + ")");
         holder.itemView.setTag(item);
     }
 

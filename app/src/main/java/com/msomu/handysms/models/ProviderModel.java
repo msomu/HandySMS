@@ -9,6 +9,7 @@ public class ProviderModel {
     private int id;
     private String provider;
     private ArrayList<SmsDataClass> smsDataClassArrayList;
+    private int totalSms;
 
     public String getProvider() {
         return provider;
@@ -32,5 +33,13 @@ public class ProviderModel {
 
     public void setSmsDataClassArrayList(ArrayList<SmsDataClass> smsDataClassArrayList) {
         this.smsDataClassArrayList = smsDataClassArrayList;
+    }
+
+    public int getTotalSms() {
+        return totalSms;
+    }
+
+    public void setTotalSms(int totalSms) {
+        this.totalSms = totalSms;
     }
 }
