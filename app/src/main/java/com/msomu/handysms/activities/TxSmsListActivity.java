@@ -77,6 +77,6 @@ public class TxSmsListActivity extends AppCompatActivity implements SmsViewAdapt
 
     @Override
     public void onItemClick(View view, SmsDataClass viewModel) {
-
+        startActivity(AddCategoryMethod.makeIntent(this, viewModel.getBody(), viewModel.getProviderId(), viewModel.getProviderName()));
     }
 }

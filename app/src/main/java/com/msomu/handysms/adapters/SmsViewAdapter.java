@@ -41,6 +41,7 @@ public class SmsViewAdapter extends RecyclerView.Adapter<SmsViewAdapter.ViewHold
         holder.text.setText(item.getBody());
         holder.date.setText("" + item.getDate());
         holder.sender.setText(item.getAddress());
+        holder.typeOfSMS.setText(item.getTypeOfCateogry());
         holder.itemView.setTag(item);
     }
 
@@ -72,12 +73,14 @@ public class SmsViewAdapter extends RecyclerView.Adapter<SmsViewAdapter.ViewHold
         public TextView text;
         public TextView date;
         public TextView sender;
+        public TextView typeOfSMS;
 
         public ViewHolder(View itemView) {
             super(itemView);
             text = (TextView) itemView.findViewById(R.id.text_body);
             date = (TextView) itemView.findViewById(R.id.date);
             sender = (TextView) itemView.findViewById(R.id.sender);
+            typeOfSMS = (TextView) itemView.findViewById(R.id.typeOfSMS);
         }
     }
 }

@@ -8,6 +8,9 @@ public class SmsDataClass {
     private String body;
     private String date;
     private String type;
+    private String providerName;
+    private int providerId;
+    private String typeOfCateogry;
     private int id;
 
     public SmsDataClass() {
@@ -51,5 +54,29 @@ public class SmsDataClass {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getTypeOfCateogry() {
+        return typeOfCateogry;
+    }
+
+    public void setTypeOfCateogry(String typeOfCateogry) {
+        this.typeOfCateogry = typeOfCateogry;
+    }
+
+    public int getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(int providerId) {
+        this.providerId = providerId;
+    }
+
+    public String getProviderName() {
+        return providerName;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
     }
 }
