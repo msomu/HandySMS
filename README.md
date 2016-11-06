@@ -1,5 +1,5 @@
 # HandySMS
-A simple app to pull your transactional sms from your sms Inbox
+A simple app to pull your transactional *sms* from your sms Inbox
 This will read all your SMS's and group your trasactional SMS's
 
 Build Instructions (Mac OS X)
